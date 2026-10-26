@@ -17,6 +17,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { transition: background-color 0.3s ease, color 0.3s ease; }
+        .rubric-card { cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .rubric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+        .rubric-active { ring: 2px solid white; transform: scale(1.02); }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 font-sans antialiased text-xs">
@@ -28,7 +31,6 @@
             <!-- Logo & Title Section -->
             <div class="flex items-center gap-4">
                 <img src="logo.png" alt="Logo" onerror="this.style.display='none'" class="h-10 w-auto object-contain rounded-xl">
-                
                 
                 </div>
                 
@@ -96,32 +98,62 @@
     <!-- Main Dashboard Container -->
     <main class="p-6 sm:p-10 lg:p-14 max-w-[88rem] mx-auto space-y-6">
 
-        <!-- Top 5 KPI Metric Cards -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Top KPI & Management Requirement Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Schools</p>
+                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">1. Active Schools</p>
                 <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-1" id="kpiSchools">0</h3>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Unique UDISE count</p>
             </div>
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Hours</p>
+                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">2. Total Hours</p>
                 <h3 class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1" id="kpiTotalHours">0.0 Hrs</h3>
                 <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">Sum of all playback</p>
             </div>
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mobile Hours</p>
-                <h3 class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1" id="kpiMobileHours">0.0 Hrs</h3>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Mobile origin</p>
+                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">3. Average Frequency</p>
+                <h3 class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1" id="kpiAvgFrequency">0.0 Days/mo</h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Avg active days per school</p>
             </div>
-            <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">TV Hours</p>
-                <h3 class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1" id="kpiTvHours">0.0 Hrs</h3>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">TV origin</p>
+        </section>
+
+        <!-- Management Rubric Category Cards (Low, Moderate, Regular, Exemplar, FLAG) -->
+        <section>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">4. School Usage Health Rubric & Classification Tabs</h3>
+                <span id="activeRubricBadge" class="text-[11px] text-indigo-400 font-semibold">Click any card to filter table</span>
             </div>
-            <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs sm:col-span-2 lg:col-span-1">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sync Hours</p>
-                <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1" id="kpiSyncHours">0.0 Hrs</h3>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">When TV and Mobile are connected</p>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <!-- Low -->
+                <div onclick="filterByRubric('Low')" id="cardLow" class="rubric-card bg-red-600 text-white p-4 rounded-2xl shadow-md text-center">
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Low (Less then 15m)</div>
+                    <div class="text-2xl font-black mt-1" id="countLow">0</div>
+                    <div class="text-[10px] opacity-80 mt-1">< 2-3 videos</div>
+                </div>
+                <!-- Moderate -->
+                <div onclick="filterByRubric('Moderate')" id="cardModerate" class="rubric-card bg-amber-500 text-slate-950 p-4 rounded-2xl shadow-md text-center">
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Moderate (16-45m)</div>
+                    <div class="text-2xl font-black mt-1" id="countModerate">0</div>
+                    <div class="text-[10px] opacity-90 mt-1">~2-9 videos</div>
+                </div>
+                <!-- Regular -->
+                <div onclick="filterByRubric('Regular')" id="cardRegular" class="rubric-card bg-emerald-600 text-white p-4 rounded-2xl shadow-md text-center">
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Regular (45m-1.5h)</div>
+                    <div class="text-2xl font-black mt-1" id="countRegular">0</div>
+                    <div class="text-[10px] opacity-80 mt-1">~9-15 videos</div>
+                </div>
+                <!-- Exemplar -->
+                <div onclick="filterByRubric('Exemplar')" id="cardExemplar" class="rubric-card bg-yellow-600 text-white p-4 rounded-2xl shadow-md text-center">
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Exemplar (1.5-4h)</div>
+                    <div class="text-2xl font-black mt-1" id="countExemplar">0</div>
+                    <div class="text-[10px] opacity-80 mt-1">~15-45 videos</div>
+                </div>
+                <!-- FLAG -->
+                <div onclick="filterByRubric('FLAG')" id="cardFLAG" class="rubric-card bg-lime-500 text-slate-950 p-4 rounded-2xl shadow-md text-center sm:col-span-1 col-span-2">
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">FLAG (> 4h)</div>
+                    <div class="text-2xl font-black mt-1" id="countFLAG">0</div>
+                    <div class="text-[10px] opacity-90 mt-1">> 45 videos / Investigate</div>
+                </div>
             </div>
         </section>
 
@@ -146,7 +178,7 @@
             <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase">Content History & School Data Table</h3>
-                
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Direct records fetched live with assigned field associates and rubric classifications</p>
                 </div>
                 <div class="w-full sm:w-auto">
                     <input type="text" id="tableSearch" placeholder="🔍 Search UDISE, School, Associate..." class="bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -169,12 +201,13 @@
                             <th class="p-3.5 text-right">TV (Hrs)</th>
                             <th class="p-3.5 text-right">Sync (Hrs)</th>
                             <th class="p-3.5 text-right font-bold text-blue-600 dark:text-blue-400">Total Hours</th>
+                            <th class="p-3.5 text-center">Rubric Tier</th>
                             <th class="p-3.5">Date</th>
                         </tr>
                     </thead>
                     <tbody id="directoryTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
                         <tr>
-                            <td colspan="13" class="p-12 text-center text-slate-400">
+                            <td colspan="14" class="p-12 text-center text-slate-400">
                                 Connecting to Excel data source (`data.xlsx`)...
                             </td>
                         </tr>
@@ -189,6 +222,7 @@
     <script>
         let globalData = [];
         let activeStateFilter = 'ALL';
+        let activeRubricFilter = 'ALL';
         let trendChartInstance = null;
         let barChartInstance = null;
 
@@ -208,7 +242,6 @@
                 
                 let rawData = XLSX.utils.sheet_to_json(worksheet);
                 
-                // Fix Excel serial date numbers to YYYY-MM-DD string format and map Associate Name
                 globalData = rawData.map(row => {
                     let dVal = row.Date;
                     if (typeof dVal === 'number') {
@@ -218,8 +251,24 @@
                         row.Date = String(dVal).trim().split('T')[0];
                     }
 
-                    // Look for AssociateName, Associate, or fallback to Unassigned
                     row.AssociateName = row.AssociateName || row.Associate || row.TeacherName || 'Unassigned';
+                    
+                    // Calculate Total Hours if missing
+                    let tot = Number(row['Total hours'] || row.TotalHours || 0);
+                    if (!tot) {
+                        tot = Number(row.MobileHours || 0) + Number(row.TvHours || 0) + Number(row.SyncHours || 0);
+                        row['Total hours'] = tot;
+                    }
+                    
+                    // Assign Rubric Tier based on monthly hours equivalent or row total hours
+                    // Rubric thresholds: Low <= 0.25h (15m), Moderate <= 0.75h (45m), Regular <= 1.5h, Exemplar <= 4h, FLAG > 4h
+                    let hrs = tot;
+                    if (hrs <= 0.25) row.RubricTier = 'Low';
+                    else if (hrs <= 0.75) row.RubricTier = 'Moderate';
+                    else if (hrs <= 1.5) row.RubricTier = 'Regular';
+                    else if (hrs <= 4.0) row.RubricTier = 'Exemplar';
+                    else row.RubricTier = 'FLAG';
+
                     return row;
                 });
                 
@@ -227,8 +276,8 @@
             } catch (error) {
                 console.warn('Auto-fetch failed:', error);
                 document.getElementById('directoryTableBody').innerHTML = `
-                    <tr><td colspan="13" class="p-12 text-center text-rose-500 font-semibold">
-                        ⚠️ Could not load <b>data.xlsx</b>. Please ensure your Excel file is saved in the same folder as index.html and you are running via Live Server.
+                    <tr><td colspan="14" class="p-12 text-center text-rose-500 font-semibold">
+                        ⚠️ Could not load <b>data.xlsx</b>. Please ensure your Excel file is saved in the same folder as index.html and running via Live Server.
                     </td></tr>`;
             }
         }
@@ -262,6 +311,17 @@
                     btn.classList.remove('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
                 }
             });
+            filterAndRender();
+        }
+
+        function filterByRubric(tier) {
+            if (activeRubricFilter === tier) {
+                activeRubricFilter = 'ALL';
+                document.getElementById('activeRubricBadge').textContent = 'Click any card to filter table';
+            } else {
+                activeRubricFilter = tier;
+                document.getElementById('activeRubricBadge').textContent = `Filtered by Rubric: ${tier} (Click card again to clear)`;
+            }
             filterAndRender();
         }
 
@@ -308,6 +368,8 @@
             document.getElementById('filterEndDate').value = '';
             document.getElementById('tableSearch').value = '';
             activeStateFilter = 'ALL';
+            activeRubricFilter = 'ALL';
+            document.getElementById('activeRubricBadge').textContent = 'Click any card to filter table';
             filterByStateTab('ALL');
         }
 
@@ -334,13 +396,13 @@
                 const rowDate = String(row.Date || '').trim();
 
                 if (activeStateFilter !== 'ALL' && stateName.toLowerCase() !== activeStateFilter.toLowerCase()) return false;
+                if (activeRubricFilter !== 'ALL' && row.RubricTier !== activeRubricFilter) return false;
                 if (p && partnerName.toLowerCase() !== p.toLowerCase()) return false;
                 if (d && districtName.toLowerCase() !== d.toLowerCase()) return false;
                 if (b && blockName.toLowerCase() !== b.toLowerCase()) return false;
                 if (asc && associateName.toLowerCase() !== asc.toLowerCase()) return false;
                 if (top && topicName.toLowerCase() !== top.toLowerCase()) return false;
 
-                // Date Range Filtering
                 if (startDate && rowDate && rowDate < startDate) return false;
                 if (endDate && rowDate && rowDate > endDate) return false;
 
@@ -350,27 +412,53 @@
             });
 
             window.currentFilteredData = filtered;
-            updateKPIs(filtered);
+            updateKPIs(filtered, globalData);
             renderCharts(filtered);
             renderTable(filtered);
         }
 
-        function updateKPIs(data) {
-            const schools = new Set(data.map(d => d.UDISE)).size;
-            let totalHrs = 0, mobileHrs = 0, tvHrs = 0, syncHrs = 0;
+        function updateKPIs(filteredData, allData) {
+            const schools = new Set(filteredData.map(d => d.UDISE)).size;
+            let totalHrs = 0;
 
-            data.forEach(d => {
+            filteredData.forEach(d => {
                 totalHrs += Number(d['Total hours'] || d.TotalHours || 0);
-                mobileHrs += Number(d.MobileHours || 0);
-                tvHrs += Number(d.TvHours || 0);
-                syncHrs += Number(d.SyncHours || 0);
             });
+
+            // Calculate Rubric Counts across current filtered scope
+            let cLow = 0, cMod = 0, cReg = 0, cEx = 0, cFlag = 0;
+            filteredData.forEach(d => {
+                if (d.RubricTier === 'Low') cLow++;
+                else if (d.RubricTier === 'Moderate') cMod++;
+                else if (d.RubricTier === 'Regular') cReg++;
+                else if (d.RubricTier === 'Exemplar') cEx++;
+                else if (d.RubricTier === 'FLAG') cFlag++;
+            });
+
+            // Average Frequency (Avg active days per unique school based on distinct dates)
+            let schoolDays = {};
+            filteredData.forEach(d => {
+                if (d.UDISE && d.Date) {
+                    if (!schoolDays[d.UDISE]) schoolDays[d.UDISE] = new Set();
+                    schoolDays[d.UDISE].add(d.Date);
+                }
+            });
+            let totalDaysSum = 0, schoolCountWithDays = 0;
+            Object.keys(schoolDays).forEach(u => {
+                totalDaysSum += schoolDays[u].size;
+                schoolCountWithDays++;
+            });
+            let avgFreq = schoolCountWithDays > 0 ? (totalDaysSum / schoolCountWithDays).toFixed(1) : '0.0';
 
             document.getElementById('kpiSchools').textContent = schools.toLocaleString();
             document.getElementById('kpiTotalHours').textContent = totalHrs.toFixed(2) + ' Hrs';
-            document.getElementById('kpiMobileHours').textContent = mobileHrs.toFixed(2) + ' Hrs';
-            document.getElementById('kpiTvHours').textContent = tvHrs.toFixed(2) + ' Hrs';
-            document.getElementById('kpiSyncHours').textContent = syncHrs.toFixed(2) + ' Hrs';
+            document.getElementById('kpiAvgFrequency').textContent = avgFreq + ' Days/mo';
+
+            document.getElementById('countLow').textContent = cLow.toLocaleString();
+            document.getElementById('countModerate').textContent = cMod.toLocaleString();
+            document.getElementById('countRegular').textContent = cReg.toLocaleString();
+            document.getElementById('countExemplar').textContent = cEx.toLocaleString();
+            document.getElementById('countFLAG').textContent = cFlag.toLocaleString();
         }
 
         function renderCharts(data) {
@@ -429,11 +517,18 @@
         function renderTable(data) {
             const tbody = document.getElementById('directoryTableBody');
             if (!data.length) {
-                tbody.innerHTML = `<tr><td colspan="13" class="p-12 text-center text-slate-400">No matching records found for selected filters.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="p-12 text-center text-slate-400">No matching records found for selected filters.</td></tr>`;
                 return;
             }
             let html = '';
             data.slice(0, 300).forEach(row => {
+                let badgeClass = 'bg-slate-800 text-slate-300';
+                if (row.RubricTier === 'Low') badgeClass = 'bg-red-600 text-white';
+                else if (row.RubricTier === 'Moderate') badgeClass = 'bg-amber-500 text-slate-950 font-bold';
+                else if (row.RubricTier === 'Regular') badgeClass = 'bg-emerald-600 text-white';
+                else if (row.RubricTier === 'Exemplar') badgeClass = 'bg-yellow-600 text-white';
+                else if (row.RubricTier === 'FLAG') badgeClass = 'bg-lime-500 text-slate-950 font-bold';
+
                 html += `
                     <tr class="hover:bg-slate-50 dark:hover:bg-[#161e2e] transition">
                         <td class="p-3.5 font-medium">${row.PartnerName || '-'}</td>
@@ -448,6 +543,7 @@
                         <td class="p-3.5 text-right font-mono">${row.TvHours ?? 0}</td>
                         <td class="p-3.5 text-right font-mono">${row.SyncHours ?? 0}</td>
                         <td class="p-3.5 text-right font-mono font-bold text-blue-600 dark:text-blue-400">${row['Total hours'] ?? row.TotalHours ?? 0}</td>
+                        <td class="p-3.5 text-center"><span class="px-2.5 py-1 rounded-lg text-[10px] ${badgeClass}">${row.RubricTier}</span></td>
                         <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${row.Date || '-'}</td>
                     </tr>
                 `;
@@ -460,7 +556,7 @@
             const worksheet = XLSX.utils.json_to_sheet(globalData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "UsageData");
-            XLSX.writeFile(workbook, "digital_shaala_export.xlsx");
+            XLSX.writeFile(workbook, "digital_shaala_management_export.xlsx");
         }
     </script>
 </body>
