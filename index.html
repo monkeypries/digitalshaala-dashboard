@@ -19,36 +19,45 @@
         body { transition: background-color 0.3s ease, color 0.3s ease; }
         .rubric-card { cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .rubric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
-        .rubric-active { ring: 2px solid white; transform: scale(1.02); }
+        .rubric-active { ring: 2px solid white; transform: scale(1.02); filter: brightness(1.1); }
+        .chart-tab-active { background-color: #6366f1 !important; color: white !important; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 font-sans antialiased text-xs">
 
     <!-- Top Header Portal -->
     <header class="bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 px-6 sm:px-12 lg:px-16 py-4 shadow-sm">
-        <div class="max-w-[88rem] mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="max-w-[92rem] mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             
             <!-- Logo & Title Section -->
             <div class="flex items-center gap-4">
                 <img src="logo.png" alt="Logo" onerror="this.style.display='none'" class="h-10 w-auto object-contain rounded-xl">
                 
+                <div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        
+                        <span class="bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20 px-2.5 py-0.5 rounded-lg text-[10px] font-bold">🕒 Last Updated: 24th October</span>
+                    </div>
+                    
                 </div>
-                
             </div>
 
-            <!-- Actions: Theme Toggle & Export -->
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <!-- Actions: Theme Toggle & Dual Export -->
+            <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
                 <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-2xs" title="Toggle Theme">
                     <span id="themeIcon">☀️</span> <span id="themeText" class="hidden sm:inline">Light Mode</span>
                 </button>
-                <button onclick="exportCSV()" class="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-2xs">
-                    📥 Export Data
+                <button onclick="exportData('filtered')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-2xs flex items-center gap-1.5">
+                    📥 Export Filtered
+                </button>
+                <button onclick="exportData('full')" class="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-2xs flex items-center gap-1.5">
+                    📂 Export Full
                 </button>
             </div>
         </div>
 
         <!-- State Navigation Tabs -->
-        <div class="max-w-[88rem] mx-auto mt-4 overflow-x-auto no-scrollbar pt-3 border-t border-slate-100 dark:border-slate-800/80 flex gap-2 pb-1">
+        <div class="max-w-[92rem] mx-auto mt-4 overflow-x-auto no-scrollbar pt-3 border-t border-slate-100 dark:border-slate-800/80 flex gap-2 pb-1">
             <button onclick="filterByStateTab('ALL')" class="state-tab tab-active px-4 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition whitespace-nowrap">ALL STATES</button>
             <button onclick="filterByStateTab('Madhya Pradesh')" class="state-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition whitespace-nowrap">MADHYA PRADESH</button>
             <button onclick="filterByStateTab('Rajasthan')" class="state-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition whitespace-nowrap">RAJASTHAN</button>
@@ -59,46 +68,50 @@
 
     <!-- Filter Control Bar -->
     <section class="bg-white dark:bg-[#111827] border-b border-slate-200 dark:border-slate-800 px-6 sm:px-12 lg:px-16 py-3.5 shadow-2xs">
-        <div class="max-w-[88rem] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
+        <div class="max-w-[92rem] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-3 items-end">
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Partner</label>
-                <select id="filterPartner" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+                <select id="filterPartner" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">District</label>
-                <select id="filterDistrict" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+                <select id="filterDistrict" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Block</label>
-                <select id="filterBlock" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+                <select id="filterBlock" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Associate Name</label>
-                <select id="filterAssociate" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+                <select id="filterAssociate" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Topic</label>
-                <select id="filterTopic" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+                <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">School Name</label>
+                <select id="filterSchool" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Month</label>
+                <select id="filterMonth" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">From Date</label>
-                <input type="date" id="filterStartDate" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-1.5 text-xs text-slate-900 dark:text-white">
+                <input type="date" id="filterStartDate" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-1.5 text-xs text-slate-900 dark:text-white">
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">End Date</label>
-                <input type="date" id="filterEndDate" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-1.5 text-xs text-slate-900 dark:text-white">
+                <input type="date" id="filterEndDate" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-1.5 text-xs text-slate-900 dark:text-white">
             </div>
             <div class="flex gap-2">
-                <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-2 rounded-xl transition shadow-2xs">Apply</button>
-                <button onclick="resetFilters()" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-bold py-2 px-2 rounded-xl transition">Reset</button>
+                <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl transition shadow-2xs">Apply</button>
+                <button onclick="resetFilters()" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-bold py-2 px-1 rounded-xl transition">Reset</button>
             </div>
         </div>
     </section>
 
     <!-- Main Dashboard Container -->
-    <main class="p-6 sm:p-10 lg:p-14 max-w-[88rem] mx-auto space-y-6">
+    <main class="p-6 sm:p-10 lg:p-14 max-w-[92rem] mx-auto space-y-6">
 
-        <!-- Top KPI & Management Requirement Cards -->
+        <!-- Top KPI Cards -->
         <section class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">1. Active Schools</p>
@@ -117,38 +130,33 @@
             </div>
         </section>
 
-        <!-- Management Rubric Category Cards (Low, Moderate, Regular, Exemplar, FLAG) -->
+        <!-- Management Rubric Category Cards -->
         <section>
             <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">4. School Usage Health Rubric & Classification Tabs</h3>
+                <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">4. School Usage Health Rubric & Classification (Unique Schools)</h3>
                 <span id="activeRubricBadge" class="text-[11px] text-indigo-400 font-semibold">Click any card to filter table</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                <!-- Low -->
                 <div onclick="filterByRubric('Low')" id="cardLow" class="rubric-card bg-red-600 text-white p-4 rounded-2xl shadow-md text-center">
-                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Low (Less then 15m)</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Low (< 15m)</div>
                     <div class="text-2xl font-black mt-1" id="countLow">0</div>
                     <div class="text-[10px] opacity-80 mt-1">< 2-3 videos</div>
                 </div>
-                <!-- Moderate -->
                 <div onclick="filterByRubric('Moderate')" id="cardModerate" class="rubric-card bg-amber-500 text-slate-950 p-4 rounded-2xl shadow-md text-center">
                     <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Moderate (16-45m)</div>
                     <div class="text-2xl font-black mt-1" id="countModerate">0</div>
                     <div class="text-[10px] opacity-90 mt-1">~2-9 videos</div>
                 </div>
-                <!-- Regular -->
                 <div onclick="filterByRubric('Regular')" id="cardRegular" class="rubric-card bg-emerald-600 text-white p-4 rounded-2xl shadow-md text-center">
                     <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Regular (45m-1.5h)</div>
                     <div class="text-2xl font-black mt-1" id="countRegular">0</div>
                     <div class="text-[10px] opacity-80 mt-1">~9-15 videos</div>
                 </div>
-                <!-- Exemplar -->
                 <div onclick="filterByRubric('Exemplar')" id="cardExemplar" class="rubric-card bg-yellow-600 text-white p-4 rounded-2xl shadow-md text-center">
                     <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Exemplar (1.5-4h)</div>
                     <div class="text-2xl font-black mt-1" id="countExemplar">0</div>
                     <div class="text-[10px] opacity-80 mt-1">~15-45 videos</div>
                 </div>
-                <!-- FLAG -->
                 <div onclick="filterByRubric('FLAG')" id="cardFLAG" class="rubric-card bg-lime-500 text-slate-950 p-4 rounded-2xl shadow-md text-center sm:col-span-1 col-span-2">
                     <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">FLAG (> 4h)</div>
                     <div class="text-2xl font-black mt-1" id="countFLAG">0</div>
@@ -157,14 +165,50 @@
             </div>
         </section>
 
+        <!-- Detailed AI Executive Summary Report & Download -->
+        <section class="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/40 border border-indigo-500/30 p-5 rounded-2xl shadow-md backdrop-blur-sm space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-lg">✨</span>
+                    <h3 class="font-black text-white text-xs uppercase tracking-wider">AI Summary Report (~25 Schools/Associate Benchmark)</h3>
+                </div>
+                <button onclick="downloadAISummaryReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    Download AI Summary
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-200 text-xs">
+                <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
+                    <div class="font-bold text-indigo-400 flex items-center gap-1.5"><span>🎯</span> 1. Cohort Health & Engagement</div>
+                    <p id="aiReportCol1" class="text-slate-300 leading-relaxed">Analyzing health tier distribution across active schools...</p>
+                </div>
+                <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
+                    <div class="font-bold text-amber-400 flex items-center gap-1.5"><span>👥</span> 2. Field Associate Workload (~25 Schools/FTE)</div>
+                    <p id="aiReportCol2" class="text-slate-300 leading-relaxed">Evaluating active associate staffing ratios and school coverage...</p>
+                </div>
+                <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
+                    <div class="font-bold text-emerald-400 flex items-center gap-1.5"><span>💡</span> 3. Strategic Recommendations & Actions</div>
+                    <p id="aiReportCol3" class="text-slate-300 leading-relaxed">Generating prioritized action items for regional leadership...</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Charts Row -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Weekly / Monthly Trend Chart -->
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
-                <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase mb-3">Daily Usage Trend (Total Hours)</h3>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase">Usage Trend Analysis</h3>
+                    <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1">
+                        <button onclick="setTrendInterval('weekly')" id="btnWeekly" class="chart-tab-active px-3 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 transition">Weekly</button>
+                        <button onclick="setTrendInterval('monthly')" id="btnMonthly" class="px-3 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 transition">Monthly</button>
+                    </div>
+                </div>
                 <div class="relative h-56 sm:h-64 w-full">
                     <canvas id="trendLineChart"></canvas>
                 </div>
             </div>
+            
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
                 <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase mb-3">Usage by Device Type</h3>
                 <div class="relative h-56 sm:h-64 w-full">
@@ -178,7 +222,7 @@
             <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase">Content History & School Data Table</h3>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Direct records fetched live with assigned field associates and rubric classifications</p>
+                    
                 </div>
                 <div class="w-full sm:w-auto">
                     <input type="text" id="tableSearch" placeholder="🔍 Search UDISE, School, Associate..." class="bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -196,18 +240,17 @@
                             <th class="p-3.5">UDISE</th>
                             <th class="p-3.5">School Name</th>
                             <th class="p-3.5">Associate Name</th>
-                            <th class="p-3.5">Topic Name</th>
                             <th class="p-3.5 text-right">Mobile (Hrs)</th>
                             <th class="p-3.5 text-right">TV (Hrs)</th>
                             <th class="p-3.5 text-right">Sync (Hrs)</th>
                             <th class="p-3.5 text-right font-bold text-blue-600 dark:text-blue-400">Total Hours</th>
-                            <th class="p-3.5 text-center">Rubric Tier</th>
+                            <th class="p-3.5 text-center">School Rubric Tier</th>
                             <th class="p-3.5">Date</th>
                         </tr>
                     </thead>
                     <tbody id="directoryTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
                         <tr>
-                            <td colspan="14" class="p-12 text-center text-slate-400">
+                            <td colspan="13" class="p-12 text-center text-slate-400">
                                 Connecting to Excel data source (`data.xlsx`)...
                             </td>
                         </tr>
@@ -223,12 +266,28 @@
         let globalData = [];
         let activeStateFilter = 'ALL';
         let activeRubricFilter = 'ALL';
+        let trendInterval = 'weekly'; // 'weekly' or 'monthly'
         let trendChartInstance = null;
         let barChartInstance = null;
+        let lastGeneratedReportText = "";
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchExcelData();
         });
+
+        // Format helper: converts '2026-10' to 'Oct 26'
+        function formatMonthDisplay(ymStr) {
+            if (!ymStr || !ymStr.includes('-')) return ymStr;
+            const parts = ymStr.split('-');
+            const year = parts[0];
+            const month = parts[1];
+            const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+            if (isNaN(date.getTime())) return ymStr;
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const mName = monthNames[date.getMonth()];
+            const yrShort = year.substring(2);
+            return `${mName} ${yrShort}`;
+        }
 
         async function fetchExcelData() {
             try {
@@ -253,30 +312,21 @@
 
                     row.AssociateName = row.AssociateName || row.Associate || row.TeacherName || 'Unassigned';
                     
-                    // Calculate Total Hours if missing
                     let tot = Number(row['Total hours'] || row.TotalHours || 0);
                     if (!tot) {
                         tot = Number(row.MobileHours || 0) + Number(row.TvHours || 0) + Number(row.SyncHours || 0);
                         row['Total hours'] = tot;
                     }
-                    
-                    // Assign Rubric Tier based on monthly hours equivalent or row total hours
-                    // Rubric thresholds: Low <= 0.25h (15m), Moderate <= 0.75h (45m), Regular <= 1.5h, Exemplar <= 4h, FLAG > 4h
-                    let hrs = tot;
-                    if (hrs <= 0.25) row.RubricTier = 'Low';
-                    else if (hrs <= 0.75) row.RubricTier = 'Moderate';
-                    else if (hrs <= 1.5) row.RubricTier = 'Regular';
-                    else if (hrs <= 4.0) row.RubricTier = 'Exemplar';
-                    else row.RubricTier = 'FLAG';
 
+                    row.Month = row.Date ? row.Date.substring(0, 7) : '';
                     return row;
                 });
                 
-                initDashboard(globalData);
+                initDashboard();
             } catch (error) {
                 console.warn('Auto-fetch failed:', error);
                 document.getElementById('directoryTableBody').innerHTML = `
-                    <tr><td colspan="14" class="p-12 text-center text-rose-500 font-semibold">
+                    <tr><td colspan="13" class="p-12 text-center text-rose-500 font-semibold">
                         ⚠️ Could not load <b>data.xlsx</b>. Please ensure your Excel file is saved in the same folder as index.html and running via Live Server.
                     </td></tr>`;
             }
@@ -300,6 +350,13 @@
             updateThemeButton(false);
         }
 
+        function setTrendInterval(interval) {
+            trendInterval = interval;
+            document.getElementById('btnWeekly').classList.toggle('chart-tab-active', interval === 'weekly');
+            document.getElementById('btnMonthly').classList.toggle('chart-tab-active', interval === 'monthly');
+            renderCharts(window.currentFilteredData || globalData);
+        }
+
         function filterByStateTab(stateName) {
             activeStateFilter = stateName;
             document.querySelectorAll('.state-tab').forEach(btn => {
@@ -311,6 +368,7 @@
                     btn.classList.remove('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
                 }
             });
+            updateDropdownOptions();
             filterAndRender();
         }
 
@@ -318,58 +376,112 @@
             if (activeRubricFilter === tier) {
                 activeRubricFilter = 'ALL';
                 document.getElementById('activeRubricBadge').textContent = 'Click any card to filter table';
+                document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-white', 'scale-105'));
             } else {
                 activeRubricFilter = tier;
-                document.getElementById('activeRubricBadge').textContent = `Filtered by Rubric: ${tier} (Click card again to clear)`;
+                document.getElementById('activeRubricBadge').textContent = `Filtered by Rubric Tier: ${tier} (Click card again to clear)`;
+                document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-white', 'scale-105'));
+                document.getElementById('card' + tier).classList.add('ring-4', 'ring-white', 'scale-105');
             }
             filterAndRender();
         }
 
-        function initDashboard(data) {
-            populateDropdowns(data);
+        function initDashboard() {
+            updateDropdownOptions();
             filterAndRender();
         }
 
-        function populateDropdowns(data) {
-            const partners = [...new Set(data.map(d => String(d.PartnerName || '').trim()))].filter(Boolean);
-            const districts = [...new Set(data.map(d => String(d.District || '').trim()))].filter(Boolean);
-            const blocks = [...new Set(data.map(d => String(d.Block || '').trim()))].filter(Boolean);
-            const associates = [...new Set(data.map(d => String(d.AssociateName || '').trim()))].filter(Boolean);
-            const topics = [...new Set(data.map(d => String(d.TopicName || '').trim()))].filter(Boolean);
+        function updateDropdownOptions() {
+            const currentPartner = document.getElementById('filterPartner').value;
+            const currentDistrict = document.getElementById('filterDistrict').value;
+            const currentBlock = document.getElementById('filterBlock').value;
+            const currentAssociate = document.getElementById('filterAssociate').value;
+            const currentSchool = document.getElementById('filterSchool').value;
+            const currentMonth = document.getElementById('filterMonth').value;
 
-            fillSelect('filterPartner', partners);
-            fillSelect('filterDistrict', districts);
-            fillSelect('filterBlock', blocks);
-            fillSelect('filterAssociate', associates);
-            fillSelect('filterTopic', topics);
+            const getSubset = (excludeKey) => {
+                return globalData.filter(row => {
+                    const stateName = String(row.State || '').trim();
+                    const partnerName = String(row.PartnerName || '').trim();
+                    const districtName = String(row.District || '').trim();
+                    const blockName = String(row.Block || '').trim();
+                    const associateName = String(row.AssociateName || '').trim();
+                    const schoolName = String(row.SchoolName || '').trim();
+                    const monthName = String(row.Month || '').trim();
+
+                    if (activeStateFilter !== 'ALL' && stateName.toLowerCase() !== activeStateFilter.toLowerCase()) return false;
+                    if (excludeKey !== 'partner' && currentPartner && partnerName !== currentPartner) return false;
+                    if (excludeKey !== 'district' && currentDistrict && districtName !== currentDistrict) return false;
+                    if (excludeKey !== 'block' && currentBlock && blockName !== currentBlock) return false;
+                    if (excludeKey !== 'associate' && currentAssociate && associateName !== currentAssociate) return false;
+                    if (excludeKey !== 'school' && currentSchool && schoolName !== currentSchool) return false;
+                    if (excludeKey !== 'month' && currentMonth && monthName !== currentMonth) return false;
+
+                    return true;
+                });
+            };
+
+            const partners = [...new Set(getSubset('partner').map(d => String(d.PartnerName || '').trim()))].filter(Boolean).sort();
+            const districts = [...new Set(getSubset('district').map(d => String(d.District || '').trim()))].filter(Boolean).sort();
+            const blocks = [...new Set(getSubset('block').map(d => String(d.Block || '').trim()))].filter(Boolean).sort();
+            const associates = [...new Set(getSubset('associate').map(d => String(d.AssociateName || '').trim()))].filter(Boolean).sort();
+            const schools = [...new Set(getSubset('school').map(d => String(d.SchoolName || '').trim()))].filter(Boolean).sort();
+            const months = [...new Set(getSubset('month').map(d => String(d.Month || '').trim()))].filter(Boolean).sort().reverse();
+
+            fillSelect('filterPartner', partners, currentPartner);
+            fillSelect('filterDistrict', districts, currentDistrict);
+            fillSelect('filterBlock', blocks, currentBlock);
+            fillSelect('filterAssociate', associates, currentAssociate);
+            fillSelect('filterSchool', schools, currentSchool);
+            fillMonthSelect('filterMonth', months, currentMonth); // Uses formatted month names
         }
 
-        function fillSelect(id, items) {
+        function fillSelect(id, items, selectedVal) {
             const sel = document.getElementById(id);
-            const current = sel.value;
             sel.innerHTML = `<option value="">ALL</option>`;
-            items.sort().forEach(item => {
+            items.forEach(item => {
                 const opt = document.createElement('option');
                 opt.value = item;
                 opt.textContent = item;
-                if (item === current) opt.selected = true;
+                if (item === selectedVal) opt.selected = true;
                 sel.appendChild(opt);
             });
         }
 
+        // Specific filler for Month dropdown to show 'Oct 26' instead of '2026-10'
+        function fillMonthSelect(id, items, selectedVal) {
+            const sel = document.getElementById(id);
+            sel.innerHTML = `<option value="">ALL</option>`;
+            items.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item; // Value stays '2026-10' for filtering
+                opt.textContent = formatMonthDisplay(item); // Display text becomes 'Oct 26'
+                if (item === selectedVal) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function onFilterChange() {
+            updateDropdownOptions();
+            filterAndRender();
+        }
+
         function applyFilters() { filterAndRender(); }
+        
         function resetFilters() {
             document.getElementById('filterPartner').value = '';
             document.getElementById('filterDistrict').value = '';
             document.getElementById('filterBlock').value = '';
             document.getElementById('filterAssociate').value = '';
-            document.getElementById('filterTopic').value = '';
+            document.getElementById('filterSchool').value = '';
+            document.getElementById('filterMonth').value = '';
             document.getElementById('filterStartDate').value = '';
             document.getElementById('filterEndDate').value = '';
             document.getElementById('tableSearch').value = '';
             activeStateFilter = 'ALL';
             activeRubricFilter = 'ALL';
             document.getElementById('activeRubricBadge').textContent = 'Click any card to filter table';
+            document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-white', 'scale-105'));
             filterByStateTab('ALL');
         }
 
@@ -380,85 +492,126 @@
             const d = document.getElementById('filterDistrict').value.trim();
             const b = document.getElementById('filterBlock').value.trim();
             const asc = document.getElementById('filterAssociate').value.trim();
-            const top = document.getElementById('filterTopic').value.trim();
+            const schl = document.getElementById('filterSchool').value.trim();
+            const mnth = document.getElementById('filterMonth').value.trim();
             const startDate = document.getElementById('filterStartDate').value;
             const endDate = document.getElementById('filterEndDate').value;
             const search = document.getElementById('tableSearch').value.toLowerCase().trim();
 
-            const filtered = globalData.filter(row => {
+            const filteredRows = globalData.filter(row => {
                 const stateName = String(row.State || '').trim();
                 const partnerName = String(row.PartnerName || '').trim();
                 const districtName = String(row.District || '').trim();
                 const blockName = String(row.Block || '').trim();
                 const associateName = String(row.AssociateName || '').trim();
-                const topicName = String(row.TopicName || '').trim();
                 const schoolName = String(row.SchoolName || '').trim();
+                const rowMonth = String(row.Month || '').trim();
                 const rowDate = String(row.Date || '').trim();
 
                 if (activeStateFilter !== 'ALL' && stateName.toLowerCase() !== activeStateFilter.toLowerCase()) return false;
-                if (activeRubricFilter !== 'ALL' && row.RubricTier !== activeRubricFilter) return false;
-                if (p && partnerName.toLowerCase() !== p.toLowerCase()) return false;
-                if (d && districtName.toLowerCase() !== d.toLowerCase()) return false;
-                if (b && blockName.toLowerCase() !== b.toLowerCase()) return false;
-                if (asc && associateName.toLowerCase() !== asc.toLowerCase()) return false;
-                if (top && topicName.toLowerCase() !== top.toLowerCase()) return false;
+                if (p && partnerName !== p) return false;
+                if (d && districtName !== d) return false;
+                if (b && blockName !== b) return false;
+                if (asc && associateName !== asc) return false;
+                if (schl && schoolName !== schl) return false;
+                if (mnth && rowMonth !== mnth) return false;
 
                 if (startDate && rowDate && rowDate < startDate) return false;
                 if (endDate && rowDate && rowDate > endDate) return false;
 
-                if (search && !`${schoolName} ${associateName} ${row.UDISE || ''} ${topicName}`.toLowerCase().includes(search)) return false;
+                if (search && !`${schoolName} ${associateName} ${row.UDISE || ''}`.toLowerCase().includes(search)) return false;
 
                 return true;
             });
 
-            window.currentFilteredData = filtered;
-            updateKPIs(filtered, globalData);
-            renderCharts(filtered);
-            renderTable(filtered);
+            let schoolTotals = {};
+            filteredRows.forEach(row => {
+                const udise = row.UDISE;
+                if (!udise) return;
+                if (!schoolTotals[udise]) {
+                    schoolTotals[udise] = {
+                        totalHours: 0,
+                        schoolName: row.SchoolName,
+                        state: row.State,
+                        district: row.District,
+                        block: row.Block,
+                        partnerName: row.PartnerName,
+                        associateName: row.AssociateName,
+                        dates: new Set()
+                    };
+                }
+                schoolTotals[udise].totalHours += Number(row['Total hours'] || row.TotalHours || 0);
+                if (row.Date) schoolTotals[udise].dates.add(row.Date);
+            });
+
+            let schoolRubrics = {};
+            let counts = { Low: 0, Moderate: 0, Regular: 0, Exemplar: 0, FLAG: 0 };
+
+            Object.keys(schoolTotals).forEach(udise => {
+                let hrs = schoolTotals[udise].totalHours;
+                let tier = 'Low';
+                if (hrs <= 0.25) tier = 'Low';
+                else if (hrs <= 0.75) tier = 'Moderate';
+                else if (hrs <= 1.5) tier = 'Regular';
+                else if (hrs <= 4.0) tier = 'Exemplar';
+                else tier = 'FLAG';
+
+                schoolRubrics[udise] = tier;
+                counts[tier]++;
+            });
+
+            filteredRows.forEach(row => {
+                row.SchoolRubricTier = schoolRubrics[row.UDISE] || 'Low';
+            });
+
+            let finalDisplayRows = filteredRows;
+            if (activeRubricFilter !== 'ALL') {
+                finalDisplayRows = filteredRows.filter(row => row.SchoolRubricTier === activeRubricFilter);
+            }
+
+            window.currentFilteredData = finalDisplayRows;
+            window.currentSchoolTotals = schoolTotals;
+
+            updateKPIs(filteredRows, schoolTotals, counts);
+            renderCharts(filteredRows);
+            renderTable(finalDisplayRows);
+            generateAIExecutiveSummary(schoolTotals, counts, filteredRows);
         }
 
-        function updateKPIs(filteredData, allData) {
-            const schools = new Set(filteredData.map(d => d.UDISE)).size;
+        function updateKPIs(filteredRows, schoolTotals, counts) {
+            const activeSchoolsCount = Object.keys(schoolTotals).length;
             let totalHrs = 0;
 
-            filteredData.forEach(d => {
+            filteredRows.forEach(d => {
                 totalHrs += Number(d['Total hours'] || d.TotalHours || 0);
             });
 
-            // Calculate Rubric Counts across current filtered scope
-            let cLow = 0, cMod = 0, cReg = 0, cEx = 0, cFlag = 0;
-            filteredData.forEach(d => {
-                if (d.RubricTier === 'Low') cLow++;
-                else if (d.RubricTier === 'Moderate') cMod++;
-                else if (d.RubricTier === 'Regular') cReg++;
-                else if (d.RubricTier === 'Exemplar') cEx++;
-                else if (d.RubricTier === 'FLAG') cFlag++;
-            });
-
-            // Average Frequency (Avg active days per unique school based on distinct dates)
-            let schoolDays = {};
-            filteredData.forEach(d => {
-                if (d.UDISE && d.Date) {
-                    if (!schoolDays[d.UDISE]) schoolDays[d.UDISE] = new Set();
-                    schoolDays[d.UDISE].add(d.Date);
-                }
-            });
             let totalDaysSum = 0, schoolCountWithDays = 0;
-            Object.keys(schoolDays).forEach(u => {
-                totalDaysSum += schoolDays[u].size;
+            Object.keys(schoolTotals).forEach(u => {
+                totalDaysSum += schoolTotals[u].dates.size;
                 schoolCountWithDays++;
             });
             let avgFreq = schoolCountWithDays > 0 ? (totalDaysSum / schoolCountWithDays).toFixed(1) : '0.0';
 
-            document.getElementById('kpiSchools').textContent = schools.toLocaleString();
+            document.getElementById('kpiSchools').textContent = activeSchoolsCount.toLocaleString();
             document.getElementById('kpiTotalHours').textContent = totalHrs.toFixed(2) + ' Hrs';
             document.getElementById('kpiAvgFrequency').textContent = avgFreq + ' Days/mo';
 
-            document.getElementById('countLow').textContent = cLow.toLocaleString();
-            document.getElementById('countModerate').textContent = cMod.toLocaleString();
-            document.getElementById('countRegular').textContent = cReg.toLocaleString();
-            document.getElementById('countExemplar').textContent = cEx.toLocaleString();
-            document.getElementById('countFLAG').textContent = cFlag.toLocaleString();
+            document.getElementById('countLow').textContent = counts.Low.toLocaleString();
+            document.getElementById('countModerate').textContent = counts.Moderate.toLocaleString();
+            document.getElementById('countRegular').textContent = counts.Regular.toLocaleString();
+            document.getElementById('countExemplar').textContent = counts.Exemplar.toLocaleString();
+            document.getElementById('countFLAG').textContent = counts.FLAG.toLocaleString();
+        }
+
+        function getIsoWeek(dateStr) {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return 'Unknown';
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+            return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
         }
 
         function renderCharts(data) {
@@ -466,29 +619,45 @@
             const gridColor = isDark ? '#1e293b' : '#e2e8f0';
             const textColor = '#64748b';
 
-            const dateMap = {};
+            const timeMap = {};
             let mTot = 0, tTot = 0, sTot = 0;
 
             data.forEach(d => {
-                const dt = d.Date || 'Unknown';
-                dateMap[dt] = (dateMap[dt] || 0) + Number(d['Total hours'] || d.TotalHours || 0);
+                let key = 'Unknown';
+                if (d.Date) {
+                    if (trendInterval === 'weekly') {
+                        key = getIsoWeek(d.Date);
+                    } else {
+                        key = d.Month || d.Date.substring(0, 7); // e.g. '2026-10'
+                    }
+                }
+                timeMap[key] = (timeMap[key] || 0) + Number(d['Total hours'] || d.TotalHours || 0);
+
                 mTot += Number(d.MobileHours || 0);
                 tTot += Number(d.TvHours || 0);
                 sTot += Number(d.SyncHours || 0);
             });
 
-            const sortedDates = Object.keys(dateMap).sort();
-            const dateValues = sortedDates.map(dt => dateMap[dt]);
+            const sortedKeys = Object.keys(timeMap).sort();
+            const timeValues = sortedKeys.map(k => timeMap[k]);
+            
+            // Format chart labels for monthly view (e.g. '2026-10' -> 'Oct 26')
+            const displayLabels = sortedKeys.map(k => {
+                if (trendInterval === 'monthly') {
+                    return formatMonthDisplay(k);
+                }
+                return k;
+            });
 
             const ctxTrend = document.getElementById('trendLineChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
             trendChartInstance = new Chart(ctxTrend, {
                 type: 'line',
                 data: {
-                    labels: sortedDates.length ? sortedDates : ['No Data'],
+                    labels: displayLabels.length ? displayLabels : ['No Data'],
                     datasets: [{
-                        label: 'Total Hours',
-                        data: dateValues.length ? dateValues : [0],
+                        label: `Total Hours (${trendInterval === 'weekly' ? 'Weekly' : 'Monthly'})`,
+                        data: timeValues.length ? timeValues : [0],
                         borderColor: '#6366f1',
                         backgroundColor: 'rgba(99,102,241,0.15)',
                         fill: true,
@@ -514,20 +683,86 @@
             });
         }
 
+        function generateAIExecutiveSummary(schoolTotals, counts, rows) {
+            const totalSchools = Object.keys(schoolTotals).length;
+            if (totalSchools === 0) {
+                document.getElementById('aiReportCol1').textContent = "No data available in current filter view.";
+                document.getElementById('aiReportCol2').textContent = "No associate metrics available.";
+                document.getElementById('aiReportCol3').textContent = "Please broaden filter selection.";
+                lastGeneratedReportText = "Digital Shaala Executive Summary: No data available.";
+                return;
+            }
+
+            let associatesSet = new Set();
+            Object.keys(schoolTotals).forEach(udise => {
+                let asc = schoolTotals[udise].associateName || 'Unassigned';
+                associatesSet.add(asc);
+            });
+
+            const totalAssociates = [...associatesSet].filter(a => a !== 'Unassigned').length;
+            const avgSchoolsPerFTE = totalAssociates > 0 ? (totalSchools / totalAssociates).toFixed(1) : totalSchools;
+            const benchmarkFTE = Math.ceil(totalSchools / 25);
+
+            let lowPct = ((counts.Low / totalSchools) * 100).toFixed(1);
+            let regularExemplarCount = counts.Regular + counts.Exemplar + counts.FLAG;
+            let healthyPct = ((regularExemplarCount / totalSchools) * 100).toFixed(1);
+
+            let col1Text = `• Active Scope: ${totalSchools} unique schools across health tiers.\n` +
+                           `• High Engagement (${healthyPct}%): ${regularExemplarCount} schools maintaining Regular, Exemplar, or FLAG usage.\n` +
+                           `• Low Engagement Risk (${lowPct}%): ${counts.Low} schools require immediate field intervention.`;
+
+            let col2Text = `• Active Field Associates: ${totalAssociates} FTEs deployed.\n` +
+                           `• School-to-FTE Ratio: Averaging ${avgSchoolsPerFTE} schools per associate (Standard Benchmark: ~25 schools).\n` +
+                           `• Staffing Recommendation: Estimated optimal staffing is ~${benchmarkFTE} associates for this school volume.`;
+
+            let col3Text = `• Prioritize field support for the ${counts.Low} Low-tier schools in upcoming weekly sprints.\n` +
+                           `• Audit the ${counts.FLAG} FLAG-tier schools to validate playback records and replicate best practices.\n` +
+                           `• Rebalance workloads for associates managing >25 schools to sustain regular monitoring frequency.`;
+
+            document.getElementById('aiReportCol1').innerText = col1Text;
+            document.getElementById('aiReportCol2').innerText = col2Text;
+            document.getElementById('aiReportCol3').innerText = col3Text;
+
+            lastGeneratedReportText = `DIGITAL SHAALA EXECUTIVE MANAGEMENT SUMMARY REPORT\n` +
+                                      `Generated on: 24th October 2026\n\n` +
+                                      `========================================\n` +
+                                      `1. COHORT HEALTH & ENGAGEMENT\n` +
+                                      `========================================\n` +
+                                      col1Text.replace(/• /g, '- ') + `\n\n` +
+                                      `========================================\n` +
+                                      `2. FIELD ASSOCIATE WORKLOAD (~25 SCHOOLS/FTE)\n` +
+                                      `========================================\n` +
+                                      col2Text.replace(/• /g, '- ') + `\n\n` +
+                                      `========================================\n` +
+                                      `3. STRATEGIC RECOMMENDATIONS & ACTIONS\n` +
+                                      `========================================\n` +
+                                      col3Text.replace(/• /g, '- ');
+        }
+
+        function downloadAISummaryReport() {
+            if (!lastGeneratedReportText) { alert('No report generated yet.'); return; }
+            const blob = new Blob([lastGeneratedReportText], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Digital_Shaala_Executive_AI_Summary.txt';
+            link.click();
+        }
+
         function renderTable(data) {
             const tbody = document.getElementById('directoryTableBody');
             if (!data.length) {
-                tbody.innerHTML = `<tr><td colspan="14" class="p-12 text-center text-slate-400">No matching records found for selected filters.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" class="p-12 text-center text-slate-400">No matching records found for selected filters.</td></tr>`;
                 return;
             }
             let html = '';
             data.slice(0, 300).forEach(row => {
+                let tier = row.SchoolRubricTier || 'Low';
                 let badgeClass = 'bg-slate-800 text-slate-300';
-                if (row.RubricTier === 'Low') badgeClass = 'bg-red-600 text-white';
-                else if (row.RubricTier === 'Moderate') badgeClass = 'bg-amber-500 text-slate-950 font-bold';
-                else if (row.RubricTier === 'Regular') badgeClass = 'bg-emerald-600 text-white';
-                else if (row.RubricTier === 'Exemplar') badgeClass = 'bg-yellow-600 text-white';
-                else if (row.RubricTier === 'FLAG') badgeClass = 'bg-lime-500 text-slate-950 font-bold';
+                if (tier === 'Low') badgeClass = 'bg-red-600 text-white';
+                else if (tier === 'Moderate') badgeClass = 'bg-amber-500 text-slate-950 font-bold';
+                else if (tier === 'Regular') badgeClass = 'bg-emerald-600 text-white';
+                else if (tier === 'Exemplar') badgeClass = 'bg-yellow-600 text-white';
+                else if (tier === 'FLAG') badgeClass = 'bg-lime-500 text-slate-950 font-bold';
 
                 html += `
                     <tr class="hover:bg-slate-50 dark:hover:bg-[#161e2e] transition">
@@ -538,12 +773,11 @@
                         <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${row.UDISE || '-'}</td>
                         <td class="p-3.5 font-bold text-slate-900 dark:text-white">${row.SchoolName || '-'}</td>
                         <td class="p-3.5 text-slate-700 dark:text-slate-300 font-semibold">${row.AssociateName || 'Unassigned'}</td>
-                        <td class="p-3.5 text-slate-500 dark:text-slate-400">${row.TopicName || '-'}</td>
                         <td class="p-3.5 text-right font-mono">${row.MobileHours ?? 0}</td>
                         <td class="p-3.5 text-right font-mono">${row.TvHours ?? 0}</td>
                         <td class="p-3.5 text-right font-mono">${row.SyncHours ?? 0}</td>
                         <td class="p-3.5 text-right font-mono font-bold text-blue-600 dark:text-blue-400">${row['Total hours'] ?? row.TotalHours ?? 0}</td>
-                        <td class="p-3.5 text-center"><span class="px-2.5 py-1 rounded-lg text-[10px] ${badgeClass}">${row.RubricTier}</span></td>
+                        <td class="p-3.5 text-center"><span class="px-2.5 py-1 rounded-lg text-[10px] ${badgeClass}">${tier}</span></td>
                         <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${row.Date || '-'}</td>
                     </tr>
                 `;
@@ -551,12 +785,16 @@
             tbody.innerHTML = html;
         }
 
-        function exportCSV() {
-            if (!globalData.length) { alert('No data available.'); return; }
-            const worksheet = XLSX.utils.json_to_sheet(globalData);
+        function exportData(type) {
+            const dataToExport = type === 'filtered' ? (window.currentFilteredData || globalData) : globalData;
+            if (!dataToExport.length) { alert('No data available to export.'); return; }
+            
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "UsageData");
-            XLSX.writeFile(workbook, "digital_shaala_management_export.xlsx");
+            
+            const filename = type === 'filtered' ? 'digital_shaala_filtered_export.xlsx' : 'digital_shaala_full_export.xlsx';
+            XLSX.writeFile(workbook, filename);
         }
     </script>
 </body>
