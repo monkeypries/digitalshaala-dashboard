@@ -19,8 +19,10 @@
         body { transition: background-color 0.3s ease, color 0.3s ease; }
         .rubric-card { cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .rubric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
-        .rubric-active { ring: 2px solid white; transform: scale(1.02); filter: brightness(1.1); }
         .chart-tab-active { background-color: #6366f1 !important; color: white !important; }
+        .multiselect-dropdown { position: relative; }
+        .multiselect-list { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; max-height: 220px; overflow-y: auto; background: #1f2937; border: 1px solid #374151; border-radius: 0.75rem; padding: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
+        .multiselect-list.show { display: block; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 font-sans antialiased text-xs">
@@ -38,7 +40,7 @@
                         
                         <span class="bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20 px-2.5 py-0.5 rounded-lg text-[10px] font-bold">🕒 Last Updated: 24th October</span>
                     </div>
-                    
+
                 </div>
             </div>
 
@@ -69,10 +71,16 @@
     <!-- Filter Control Bar -->
     <section class="bg-white dark:bg-[#111827] border-b border-slate-200 dark:border-slate-800 px-6 sm:px-12 lg:px-16 py-3.5 shadow-2xs">
         <div class="max-w-[92rem] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-3 items-end">
-            <div>
-                <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Partner</label>
-                <select id="filterPartner" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
+            
+            <!-- Clickable Multi-Select Partner Filter -->
+            <div class="multiselect-dropdown">
+                <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Partner (Multi-Select)</label>
+                <div id="partnerSelectBtn" onclick="togglePartnerDropdown(event)" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white cursor-pointer truncate flex justify-between items-center">
+                    <span id="partnerSelectLabel">ALL</span> <span class="pointer-events-none">▼</span>
+                </div>
+                <div id="partnerSelectList" class="multiselect-list"></div>
             </div>
+
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">District</label>
                 <select id="filterDistrict" onchange="onFilterChange()" class="w-full bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs text-slate-900 dark:text-white"><option value="">ALL</option></select>
@@ -136,66 +144,93 @@
                 <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">4. School Usage Health Rubric & Classification (Unique Schools)</h3>
                 <span id="activeRubricBadge" class="text-[11px] text-indigo-400 font-semibold">Click any card to filter table</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+                <div onclick="filterByRubric('Inactive')" id="cardInactive" class="rubric-card bg-slate-700 dark:bg-slate-800 border border-slate-600 text-slate-100 p-4 rounded-2xl shadow-md text-center">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-300"> Just Starting (< 2m)</div>
+                    <div class="text-2xl font-black mt-1" id="countInactive">0</div>
+                    <div class="text-[10px] text-slate-400 mt-1">Onboarding phase</div>
+                </div>
                 <div onclick="filterByRubric('Low')" id="cardLow" class="rubric-card bg-red-600 text-white p-4 rounded-2xl shadow-md text-center">
-                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Low (< 15m)</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-95">Low Usage (< 15m)</div>
                     <div class="text-2xl font-black mt-1" id="countLow">0</div>
-                    <div class="text-[10px] opacity-80 mt-1">< 2-3 videos</div>
+                    <div class="text-[10px] opacity-80 mt-1">Needs encouragement</div>
                 </div>
                 <div onclick="filterByRubric('Moderate')" id="cardModerate" class="rubric-card bg-amber-500 text-slate-950 p-4 rounded-2xl shadow-md text-center">
-                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Moderate (16-45m)</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-95">Moderate (16-45m)</div>
                     <div class="text-2xl font-black mt-1" id="countModerate">0</div>
-                    <div class="text-[10px] opacity-90 mt-1">~2-9 videos</div>
+                    <div class="text-[10px] opacity-90 mt-1">Growing steadily</div>
                 </div>
                 <div onclick="filterByRubric('Regular')" id="cardRegular" class="rubric-card bg-emerald-600 text-white p-4 rounded-2xl shadow-md text-center">
-                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Regular (45m-1.5h)</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-95">Regular (45m-1.5h)</div>
                     <div class="text-2xl font-black mt-1" id="countRegular">0</div>
-                    <div class="text-[10px] opacity-80 mt-1">~9-15 videos</div>
+                    <div class="text-[10px] opacity-80 mt-1">Consistent learner</div>
                 </div>
                 <div onclick="filterByRubric('Exemplar')" id="cardExemplar" class="rubric-card bg-yellow-600 text-white p-4 rounded-2xl shadow-md text-center">
-                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">Exemplar (1.5-4h)</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-95">Exemplar (1.5-4h)</div>
                     <div class="text-2xl font-black mt-1" id="countExemplar">0</div>
-                    <div class="text-[10px] opacity-80 mt-1">~15-45 videos</div>
+                    <div class="text-[10px] opacity-80 mt-1">Role model school</div>
                 </div>
-                <div onclick="filterByRubric('FLAG')" id="cardFLAG" class="rubric-card bg-lime-500 text-slate-950 p-4 rounded-2xl shadow-md text-center sm:col-span-1 col-span-2">
-                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-90">FLAG (> 4h)</div>
+                <div onclick="filterByRubric('FLAG')" id="cardFLAG" class="rubric-card bg-lime-500 text-slate-950 p-4 rounded-2xl shadow-md text-center">
+                    <div class="text-[10px] font-bold uppercase tracking-wider opacity-95">FLAG / High (> 4h)</div>
                     <div class="text-2xl font-black mt-1" id="countFLAG">0</div>
-                    <div class="text-[10px] opacity-90 mt-1">> 45 videos / Investigate</div>
+                    <div class="text-[10px] opacity-90 mt-1">> 45 videos / Audit</div>
                 </div>
             </div>
         </section>
 
-        <!-- Detailed AI Executive Summary Report & Download -->
+        <!-- Top 5 & Bottom 5 Schools Leaderboard Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase flex items-center gap-2">
+                        <span>🏆</span> Top 5 High-Performing Schools
+                    </h3>
+                    <span class="text-[10px] text-emerald-500 font-semibold">Highest Total Minutes</span>
+                </div>
+                <div id="topFiveList" class="space-y-2"></div>
+            </div>
+
+            <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase flex items-center gap-2">
+                        <span>🌱</span> Bottom 5 Schools (Needs Attention)
+                    </h3>
+                    <span class="text-[10px] text-amber-500 font-semibold">Lowest Total Minutes</span>
+                </div>
+                <div id="bottomFiveList" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <!-- Friendly & Warm AI Summary Report -->
         <section class="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/40 border border-indigo-500/30 p-5 rounded-2xl shadow-md backdrop-blur-sm space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div class="flex items-center gap-2.5">
-                    <span class="text-lg">✨</span>
-                    <h3 class="font-black text-white text-xs uppercase tracking-wider">AI Summary Report (~25 Schools/Associate Benchmark)</h3>
+                    <span class="text-lg"></span>
+                    <h3 class="font-black text-white text-xs uppercase tracking-wider">AI Summary Report (School, Associate, & Subject Insights)</h3>
                 </div>
                 <button onclick="downloadAISummaryReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                    Download AI Summary
+                     Download AI Summary 
                 </button>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-200 text-xs">
                 <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
-                    <div class="font-bold text-indigo-400 flex items-center gap-1.5"><span>🎯</span> 1. Cohort Health & Engagement</div>
-                    <p id="aiReportCol1" class="text-slate-300 leading-relaxed">Analyzing health tier distribution across active schools...</p>
+                    <div class="font-bold text-indigo-400 flex items-center gap-1.5"><span>🏫</span> School Summary</div>
+                    <p id="aiReportSchool" class="text-slate-300 leading-relaxed">Gathering school stories and learning moments...</p>
                 </div>
                 <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
-                    <div class="font-bold text-amber-400 flex items-center gap-1.5"><span>👥</span> 2. Field Associate Workload (~25 Schools/FTE)</div>
-                    <p id="aiReportCol2" class="text-slate-300 leading-relaxed">Evaluating active associate staffing ratios and school coverage...</p>
+                    <div class="font-bold text-amber-400 flex items-center gap-1.5"><span>🦸‍♂️</span> Associate Summary (~25 Schools)</div>
+                    <p id="aiReportAssociate" class="text-slate-300 leading-relaxed">Reviewing field associate efforts and support...</p>
                 </div>
                 <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
-                    <div class="font-bold text-emerald-400 flex items-center gap-1.5"><span>💡</span> 3. Strategic Recommendations & Actions</div>
-                    <p id="aiReportCol3" class="text-slate-300 leading-relaxed">Generating prioritized action items for regional leadership...</p>
+                    <div class="font-bold text-emerald-400 flex items-center gap-1.5"><span>📚</span> Subject & Topic Summary</div>
+                    <p id="aiReportSubject" class="text-slate-300 leading-relaxed">Exploring favorite student learning topics...</p>
                 </div>
             </div>
         </section>
 
         <!-- Charts Row -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Weekly / Monthly Trend Chart -->
             <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
                     <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase">Usage Trend Analysis</h3>
@@ -217,12 +252,12 @@
             </div>
         </section>
 
-        <!-- School Data Table -->
+        <!-- Aggregated School Data Table -->
         <section class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xs overflow-hidden">
             <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase">Content History & School Data Table</h3>
-                    
+                    <h3 class="font-bold text-slate-900 dark:text-white text-xs uppercase">Content History & School Data Table (Aggregated by School)</h3>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Showing unique school rollups with aggregated minutes and device stats</p>
                 </div>
                 <div class="w-full sm:w-auto">
                     <input type="text" id="tableSearch" placeholder="🔍 Search UDISE, School, Associate..." class="bg-slate-50 dark:bg-[#1f2937] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -240,17 +275,16 @@
                             <th class="p-3.5">UDISE</th>
                             <th class="p-3.5">School Name</th>
                             <th class="p-3.5">Associate Name</th>
-                            <th class="p-3.5 text-right">Mobile (Hrs)</th>
-                            <th class="p-3.5 text-right">TV (Hrs)</th>
-                            <th class="p-3.5 text-right">Sync (Hrs)</th>
-                            <th class="p-3.5 text-right font-bold text-blue-600 dark:text-blue-400">Total Hours</th>
+                            <th class="p-3.5 text-right">Mobile (Mins)</th>
+                            <th class="p-3.5 text-right">TV (Mins)</th>
+                            <th class="p-3.5 text-right">Sync (Mins)</th>
+                            <th class="p-3.5 text-right font-bold text-blue-600 dark:text-blue-400">Total Minutes</th>
                             <th class="p-3.5 text-center">School Rubric Tier</th>
-                            <th class="p-3.5">Date</th>
                         </tr>
                     </thead>
                     <tbody id="directoryTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
                         <tr>
-                            <td colspan="13" class="p-12 text-center text-slate-400">
+                            <td colspan="12" class="p-12 text-center text-slate-400">
                                 Connecting to Excel data source (`data.xlsx`)...
                             </td>
                         </tr>
@@ -266,16 +300,22 @@
         let globalData = [];
         let activeStateFilter = 'ALL';
         let activeRubricFilter = 'ALL';
-        let trendInterval = 'weekly'; // 'weekly' or 'monthly'
+        let selectedPartners = [];
+        let trendInterval = 'weekly';
         let trendChartInstance = null;
         let barChartInstance = null;
         let lastGeneratedReportText = "";
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchExcelData();
+            window.addEventListener('click', (e) => {
+                if (!e.target.closest('.multiselect-dropdown')) {
+                    const list = document.getElementById('partnerSelectList');
+                    if (list) list.classList.remove('show');
+                }
+            });
         });
 
-        // Format helper: converts '2026-10' to 'Oct 26'
         function formatMonthDisplay(ymStr) {
             if (!ymStr || !ymStr.includes('-')) return ymStr;
             const parts = ymStr.split('-');
@@ -311,6 +351,7 @@
                     }
 
                     row.AssociateName = row.AssociateName || row.Associate || row.TeacherName || 'Unassigned';
+                    row.TopicName = row.TopicName || row.Topic || row.Subject || row.SubjectName || 'General STEM';
                     
                     let tot = Number(row['Total hours'] || row.TotalHours || 0);
                     if (!tot) {
@@ -326,7 +367,7 @@
             } catch (error) {
                 console.warn('Auto-fetch failed:', error);
                 document.getElementById('directoryTableBody').innerHTML = `
-                    <tr><td colspan="13" class="p-12 text-center text-rose-500 font-semibold">
+                    <tr><td colspan="12" class="p-12 text-center text-rose-500 font-semibold">
                         ⚠️ Could not load <b>data.xlsx</b>. Please ensure your Excel file is saved in the same folder as index.html and running via Live Server.
                     </td></tr>`;
             }
@@ -376,12 +417,12 @@
             if (activeRubricFilter === tier) {
                 activeRubricFilter = 'ALL';
                 document.getElementById('activeRubricBadge').textContent = 'Click any card to filter table';
-                document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-white', 'scale-105'));
+                document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-indigo-600', 'dark:ring-white', 'scale-105'));
             } else {
                 activeRubricFilter = tier;
                 document.getElementById('activeRubricBadge').textContent = `Filtered by Rubric Tier: ${tier} (Click card again to clear)`;
-                document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-white', 'scale-105'));
-                document.getElementById('card' + tier).classList.add('ring-4', 'ring-white', 'scale-105');
+                document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-indigo-600', 'dark:ring-white', 'scale-105'));
+                document.getElementById('card' + tier).classList.add('ring-4', 'ring-indigo-600', 'dark:ring-white', 'scale-105');
             }
             filterAndRender();
         }
@@ -391,8 +432,33 @@
             filterAndRender();
         }
 
+        function togglePartnerDropdown(event) {
+            event.stopPropagation();
+            const list = document.getElementById('partnerSelectList');
+            list.classList.toggle('show');
+        }
+
+        function updatePartnerSelection() {
+            const checkboxes = document.querySelectorAll('.partner-checkbox');
+            selectedPartners = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked && cb.value !== 'ALL') selectedPartners.push(cb.value);
+            });
+
+            const label = document.getElementById('partnerSelectLabel');
+            if (selectedPartners.length === 0) {
+                label.textContent = 'ALL';
+            } else if (selectedPartners.length === 1) {
+                label.textContent = selectedPartners[0];
+            } else {
+                label.textContent = `${selectedPartners.length} Partners Selected`;
+            }
+
+            updateDropdownOptions();
+            filterAndRender();
+        }
+
         function updateDropdownOptions() {
-            const currentPartner = document.getElementById('filterPartner').value;
             const currentDistrict = document.getElementById('filterDistrict').value;
             const currentBlock = document.getElementById('filterBlock').value;
             const currentAssociate = document.getElementById('filterAssociate').value;
@@ -410,7 +476,7 @@
                     const monthName = String(row.Month || '').trim();
 
                     if (activeStateFilter !== 'ALL' && stateName.toLowerCase() !== activeStateFilter.toLowerCase()) return false;
-                    if (excludeKey !== 'partner' && currentPartner && partnerName !== currentPartner) return false;
+                    if (excludeKey !== 'partner' && selectedPartners.length > 0 && !selectedPartners.includes(partnerName)) return false;
                     if (excludeKey !== 'district' && currentDistrict && districtName !== currentDistrict) return false;
                     if (excludeKey !== 'block' && currentBlock && blockName !== currentBlock) return false;
                     if (excludeKey !== 'associate' && currentAssociate && associateName !== currentAssociate) return false;
@@ -421,19 +487,35 @@
                 });
             };
 
-            const partners = [...new Set(getSubset('partner').map(d => String(d.PartnerName || '').trim()))].filter(Boolean).sort();
+            const partners = [...new Set(globalData.map(d => String(d.PartnerName || '').trim()))].filter(Boolean).sort();
             const districts = [...new Set(getSubset('district').map(d => String(d.District || '').trim()))].filter(Boolean).sort();
             const blocks = [...new Set(getSubset('block').map(d => String(d.Block || '').trim()))].filter(Boolean).sort();
             const associates = [...new Set(getSubset('associate').map(d => String(d.AssociateName || '').trim()))].filter(Boolean).sort();
             const schools = [...new Set(getSubset('school').map(d => String(d.SchoolName || '').trim()))].filter(Boolean).sort();
             const months = [...new Set(getSubset('month').map(d => String(d.Month || '').trim()))].filter(Boolean).sort().reverse();
 
-            fillSelect('filterPartner', partners, currentPartner);
+            const partnerListEl = document.getElementById('partnerSelectList');
+            let partnerHtml = '';
+            partners.forEach(p => {
+                const isChecked = selectedPartners.includes(p) ? 'checked' : '';
+                partnerHtml += `<label class="flex items-center gap-2 p-1.5 hover:bg-slate-800 rounded cursor-pointer text-slate-200"><input type="checkbox" value="${p}" ${isChecked} class="partner-checkbox rounded text-indigo-600" onchange="updatePartnerSelection()"> ${p}</label>`;
+            });
+            const allChecked = selectedPartners.length === 0 ? 'checked' : '';
+            partnerHtml += `<div class="border-t border-slate-700 mt-1 pt-1"><label class="flex items-center gap-2 p-1.5 hover:bg-slate-800 rounded cursor-pointer text-indigo-400 font-bold"><input type="checkbox" value="ALL" ${allChecked} class="partner-checkbox rounded text-indigo-600" onchange="resetPartnerSelection()"> ALL PARTNERS</label></div>`;
+            partnerListEl.innerHTML = partnerHtml;
+
             fillSelect('filterDistrict', districts, currentDistrict);
             fillSelect('filterBlock', blocks, currentBlock);
             fillSelect('filterAssociate', associates, currentAssociate);
             fillSelect('filterSchool', schools, currentSchool);
-            fillMonthSelect('filterMonth', months, currentMonth); // Uses formatted month names
+            fillMonthSelect('filterMonth', months, currentMonth);
+        }
+
+        function resetPartnerSelection() {
+            selectedPartners = [];
+            document.getElementById('partnerSelectLabel').textContent = 'ALL';
+            updateDropdownOptions();
+            filterAndRender();
         }
 
         function fillSelect(id, items, selectedVal) {
@@ -448,14 +530,13 @@
             });
         }
 
-        // Specific filler for Month dropdown to show 'Oct 26' instead of '2026-10'
         function fillMonthSelect(id, items, selectedVal) {
             const sel = document.getElementById(id);
             sel.innerHTML = `<option value="">ALL</option>`;
             items.forEach(item => {
                 const opt = document.createElement('option');
-                opt.value = item; // Value stays '2026-10' for filtering
-                opt.textContent = formatMonthDisplay(item); // Display text becomes 'Oct 26'
+                opt.value = item;
+                opt.textContent = formatMonthDisplay(item);
                 if (item === selectedVal) opt.selected = true;
                 sel.appendChild(opt);
             });
@@ -469,7 +550,8 @@
         function applyFilters() { filterAndRender(); }
         
         function resetFilters() {
-            document.getElementById('filterPartner').value = '';
+            selectedPartners = [];
+            document.getElementById('partnerSelectLabel').textContent = 'ALL';
             document.getElementById('filterDistrict').value = '';
             document.getElementById('filterBlock').value = '';
             document.getElementById('filterAssociate').value = '';
@@ -481,14 +563,13 @@
             activeStateFilter = 'ALL';
             activeRubricFilter = 'ALL';
             document.getElementById('activeRubricBadge').textContent = 'Click any card to filter table';
-            document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-white', 'scale-105'));
+            document.querySelectorAll('.rubric-card').forEach(c => c.classList.remove('ring-4', 'ring-indigo-600', 'dark:ring-white', 'scale-105'));
             filterByStateTab('ALL');
         }
 
         document.getElementById('tableSearch')?.addEventListener('input', filterAndRender);
 
         function filterAndRender() {
-            const p = document.getElementById('filterPartner').value.trim();
             const d = document.getElementById('filterDistrict').value.trim();
             const b = document.getElementById('filterBlock').value.trim();
             const asc = document.getElementById('filterAssociate').value.trim();
@@ -509,7 +590,7 @@
                 const rowDate = String(row.Date || '').trim();
 
                 if (activeStateFilter !== 'ALL' && stateName.toLowerCase() !== activeStateFilter.toLowerCase()) return false;
-                if (p && partnerName !== p) return false;
+                if (selectedPartners.length > 0 && !selectedPartners.includes(partnerName)) return false;
                 if (d && districtName !== d) return false;
                 if (b && blockName !== b) return false;
                 if (asc && associateName !== asc) return false;
@@ -524,6 +605,15 @@
                 return true;
             });
 
+            // Dynamic monthly rubric scaling factor
+            let activeMonthsCount = 1;
+            if (mnth) {
+                activeMonthsCount = 1;
+            } else {
+                let uniqueMonths = new Set(filteredRows.map(r => r.Month).filter(Boolean));
+                activeMonthsCount = Math.max(1, uniqueMonths.size);
+            }
+
             let schoolTotals = {};
             filteredRows.forEach(row => {
                 const udise = row.UDISE;
@@ -531,51 +621,73 @@
                 if (!schoolTotals[udise]) {
                     schoolTotals[udise] = {
                         totalHours: 0,
+                        mobileHours: 0,
+                        tvHours: 0,
+                        syncHours: 0,
                         schoolName: row.SchoolName,
                         state: row.State,
                         district: row.District,
                         block: row.Block,
                         partnerName: row.PartnerName,
                         associateName: row.AssociateName,
-                        dates: new Set()
+                        dates: new Set(),
+                        topics: {}
                     };
                 }
-                schoolTotals[udise].totalHours += Number(row['Total hours'] || row.TotalHours || 0);
+                const hrs = Number(row['Total hours'] || row.TotalHours || 0);
+                const mob = Number(row.MobileHours || 0);
+                const tv = Number(row.TvHours || 0);
+                const syn = Number(row.SyncHours || 0);
+                
+                schoolTotals[udise].totalHours += hrs;
+                schoolTotals[udise].mobileHours += mob;
+                schoolTotals[udise].tvHours += tv;
+                schoolTotals[udise].syncHours += syn;
+
                 if (row.Date) schoolTotals[udise].dates.add(row.Date);
+                
+                const top = row.TopicName || 'General STEM';
+                schoolTotals[udise].topics[top] = (schoolTotals[udise].topics[top] || 0) + hrs;
             });
 
             let schoolRubrics = {};
-            let counts = { Low: 0, Moderate: 0, Regular: 0, Exemplar: 0, FLAG: 0 };
+            let counts = { Inactive: 0, Low: 0, Moderate: 0, Regular: 0, Exemplar: 0, FLAG: 0 };
+            const mFactor = activeMonthsCount;
 
             Object.keys(schoolTotals).forEach(udise => {
                 let hrs = schoolTotals[udise].totalHours;
-                let tier = 'Low';
-                if (hrs <= 0.25) tier = 'Low';
-                else if (hrs <= 0.75) tier = 'Moderate';
-                else if (hrs <= 1.5) tier = 'Regular';
-                else if (hrs <= 4.0) tier = 'Exemplar';
+                let tier = 'Inactive';
+                
+                if (hrs < (0.033 * mFactor)) tier = 'Inactive';
+                else if (hrs <= (0.25 * mFactor)) tier = 'Low';
+                else if (hrs <= (0.75 * mFactor)) tier = 'Moderate';
+                else if (hrs <= (1.5 * mFactor)) tier = 'Regular';
+                else if (hrs <= (4.0 * mFactor)) tier = 'Exemplar';
                 else tier = 'FLAG';
 
                 schoolRubrics[udise] = tier;
                 counts[tier]++;
+                schoolTotals[udise].rubricTier = tier;
             });
 
-            filteredRows.forEach(row => {
-                row.SchoolRubricTier = schoolRubrics[row.UDISE] || 'Low';
-            });
+            let aggregatedSchoolsList = Object.keys(schoolTotals).map(udise => ({
+                udise: udise,
+                ...schoolTotals[udise]
+            }));
 
-            let finalDisplayRows = filteredRows;
+            let finalDisplaySchools = aggregatedSchoolsList;
             if (activeRubricFilter !== 'ALL') {
-                finalDisplayRows = filteredRows.filter(row => row.SchoolRubricTier === activeRubricFilter);
+                finalDisplaySchools = aggregatedSchoolsList.filter(s => s.rubricTier === activeRubricFilter);
             }
 
-            window.currentFilteredData = finalDisplayRows;
+            window.currentFilteredData = filteredRows;
             window.currentSchoolTotals = schoolTotals;
 
             updateKPIs(filteredRows, schoolTotals, counts);
+            renderLeaderboards(aggregatedSchoolsList);
             renderCharts(filteredRows);
-            renderTable(finalDisplayRows);
-            generateAIExecutiveSummary(schoolTotals, counts, filteredRows);
+            renderTable(finalDisplaySchools);
+            generateFriendlyAISummary(schoolTotals, counts, filteredRows);
         }
 
         function updateKPIs(filteredRows, schoolTotals, counts) {
@@ -597,11 +709,62 @@
             document.getElementById('kpiTotalHours').textContent = totalHrs.toFixed(2) + ' Hrs';
             document.getElementById('kpiAvgFrequency').textContent = avgFreq + ' Days/mo';
 
+            document.getElementById('countInactive').textContent = counts.Inactive.toLocaleString();
             document.getElementById('countLow').textContent = counts.Low.toLocaleString();
             document.getElementById('countModerate').textContent = counts.Moderate.toLocaleString();
             document.getElementById('countRegular').textContent = counts.Regular.toLocaleString();
             document.getElementById('countExemplar').textContent = counts.Exemplar.toLocaleString();
             document.getElementById('countFLAG').textContent = counts.FLAG.toLocaleString();
+        }
+
+        function renderLeaderboards(schoolsList) {
+            const sorted = [...schoolsList].sort((a, b) => b.totalHours - a.totalHours);
+            const top5 = sorted.slice(0, 5);
+            const bottom5 = [...sorted].reverse().slice(0, 5);
+
+            let topHtml = '';
+            if (top5.length === 0) {
+                topHtml = `<p class="text-slate-400 text-center py-4">No data available</p>`;
+            } else {
+                top5.forEach((s, idx) => {
+                    let mins = (s.totalHours * 60).toFixed(1);
+                    topHtml += `
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">${idx + 1}</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-[260px]">${s.schoolName || 'Unknown School'}</h4>
+                                    <p class="text-[10px] text-slate-500">${s.district || 'District N/A'} • Associate: ${s.associateName || 'Unassigned'}</p>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-emerald-500 text-xs">${mins} Mins</span>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('topFiveList').innerHTML = topHtml;
+
+            let bottomHtml = '';
+            if (bottom5.length === 0) {
+                bottomHtml = `<p class="text-slate-400 text-center py-4">No data available</p>`;
+            } else {
+                bottom5.forEach((s, idx) => {
+                    let mins = (s.totalHours * 60).toFixed(1);
+                    bottomHtml += `
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">${idx + 1}</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-[260px]">${s.schoolName || 'Unknown School'}</h4>
+                                    <p class="text-[10px] text-slate-500">${s.district || 'District N/A'} • Associate: ${s.associateName || 'Unassigned'}</p>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-amber-500 text-xs">${mins} Mins</span>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('bottomFiveList').innerHTML = bottomHtml;
         }
 
         function getIsoWeek(dateStr) {
@@ -628,7 +791,7 @@
                     if (trendInterval === 'weekly') {
                         key = getIsoWeek(d.Date);
                     } else {
-                        key = d.Month || d.Date.substring(0, 7); // e.g. '2026-10'
+                        key = d.Month || d.Date.substring(0, 7);
                     }
                 }
                 timeMap[key] = (timeMap[key] || 0) + Number(d['Total hours'] || d.TotalHours || 0);
@@ -640,14 +803,7 @@
 
             const sortedKeys = Object.keys(timeMap).sort();
             const timeValues = sortedKeys.map(k => timeMap[k]);
-            
-            // Format chart labels for monthly view (e.g. '2026-10' -> 'Oct 26')
-            const displayLabels = sortedKeys.map(k => {
-                if (trendInterval === 'monthly') {
-                    return formatMonthDisplay(k);
-                }
-                return k;
-            });
+            const displayLabels = sortedKeys.map(k => trendInterval === 'monthly' ? formatMonthDisplay(k) : k);
 
             const ctxTrend = document.getElementById('trendLineChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
@@ -683,60 +839,57 @@
             });
         }
 
-        function generateAIExecutiveSummary(schoolTotals, counts, rows) {
+        function generateFriendlyAISummary(schoolTotals, counts, rows) {
             const totalSchools = Object.keys(schoolTotals).length;
             if (totalSchools === 0) {
-                document.getElementById('aiReportCol1').textContent = "No data available in current filter view.";
-                document.getElementById('aiReportCol2').textContent = "No associate metrics available.";
-                document.getElementById('aiReportCol3').textContent = "Please broaden filter selection.";
-                lastGeneratedReportText = "Digital Shaala Executive Summary: No data available.";
+                document.getElementById('aiReportSchool').textContent = "We don't have school data for this filter selection right now!";
+                document.getElementById('aiReportAssociate').textContent = "No associate activity recorded here.";
+                document.getElementById('aiReportSubject').textContent = "Check back once activity is logged.";
+                lastGeneratedReportText = "Digital Shaala Friendly Summary: No data available.";
                 return;
             }
 
-            let associatesSet = new Set();
-            Object.keys(schoolTotals).forEach(udise => {
-                let asc = schoolTotals[udise].associateName || 'Unassigned';
-                associatesSet.add(asc);
+            let associateMap = {};
+            Object.keys(schoolTotals).forEach(u => {
+                let asc = schoolTotals[u].associateName || 'Unassigned';
+                if (!associateMap[asc]) associateMap[asc] = { schools: 0, hours: 0 };
+                associateMap[asc].schools++;
+                associateMap[asc].hours += schoolTotals[u].totalHours;
             });
+            const totalAssocs = Object.keys(associateMap).filter(a => a !== 'Unassigned').length;
 
-            const totalAssociates = [...associatesSet].filter(a => a !== 'Unassigned').length;
-            const avgSchoolsPerFTE = totalAssociates > 0 ? (totalSchools / totalAssociates).toFixed(1) : totalSchools;
-            const benchmarkFTE = Math.ceil(totalSchools / 25);
+            let topicMap = {};
+            rows.forEach(r => {
+                let top = r.TopicName || 'General STEM';
+                topicMap[top] = (topicMap[top] || 0) + Number(r['Total hours'] || r.TotalHours || 0);
+            });
+            let sortedTopics = Object.keys(topicMap).sort((a,b) => topicMap[b] - topicMap[a]);
+            let topTopic = sortedTopics[0] || 'General STEM';
 
-            let lowPct = ((counts.Low / totalSchools) * 100).toFixed(1);
-            let regularExemplarCount = counts.Regular + counts.Exemplar + counts.FLAG;
-            let healthyPct = ((regularExemplarCount / totalSchools) * 100).toFixed(1);
+            let schoolText = `Wonderful news! We are actively supporting ${totalSchools} schools in this view. Out of these, ${counts.Regular + counts.Exemplar + counts.FLAG} schools are doing a fantastic job keeping up regular learning habits! We have ${counts.Inactive + counts.Low} schools in the onboarding and nurturing phase that will blossom with a little extra love from our team soon.`;
 
-            let col1Text = `• Active Scope: ${totalSchools} unique schools across health tiers.\n` +
-                           `• High Engagement (${healthyPct}%): ${regularExemplarCount} schools maintaining Regular, Exemplar, or FLAG usage.\n` +
-                           `• Low Engagement Risk (${lowPct}%): ${counts.Low} schools require immediate field intervention.`;
+            let associateText = `Our wonderful field team of ${totalAssocs} associates are supporting an average of ~${totalAssocs > 0 ? (totalSchools / totalAssocs).toFixed(1) : totalSchools} schools each (right around our cozy ~25 schools per associate benchmark). Everyone is doing their best to bring smiles and learning to every classroom!`;
 
-            let col2Text = `• Active Field Associates: ${totalAssociates} FTEs deployed.\n` +
-                           `• School-to-FTE Ratio: Averaging ${avgSchoolsPerFTE} schools per associate (Standard Benchmark: ~25 schools).\n` +
-                           `• Staffing Recommendation: Estimated optimal staffing is ~${benchmarkFTE} associates for this school volume.`;
+            let subjectText = `Students are showing the most excitement learning about **${topTopic}** this month! It's wonderful to see curiosity sparkling across classrooms as kids dive into these engaging STEM topics.`;
 
-            let col3Text = `• Prioritize field support for the ${counts.Low} Low-tier schools in upcoming weekly sprints.\n` +
-                           `• Audit the ${counts.FLAG} FLAG-tier schools to validate playback records and replicate best practices.\n` +
-                           `• Rebalance workloads for associates managing >25 schools to sustain regular monitoring frequency.`;
+            document.getElementById('aiReportSchool').innerText = schoolText;
+            document.getElementById('aiReportAssociate').innerText = associateText;
+            document.getElementById('aiReportSubject').innerHTML = subjectText;
 
-            document.getElementById('aiReportCol1').innerText = col1Text;
-            document.getElementById('aiReportCol2').innerText = col2Text;
-            document.getElementById('aiReportCol3').innerText = col3Text;
-
-            lastGeneratedReportText = `DIGITAL SHAALA EXECUTIVE MANAGEMENT SUMMARY REPORT\n` +
+            lastGeneratedReportText = `DIGITAL SHAALA FRIENDLY AI MANAGEMENT SUMMARY\n` +
                                       `Generated on: 24th October 2026\n\n` +
-                                      `========================================\n` +
-                                      `1. COHORT HEALTH & ENGAGEMENT\n` +
-                                      `========================================\n` +
-                                      col1Text.replace(/• /g, '- ') + `\n\n` +
-                                      `========================================\n` +
-                                      `2. FIELD ASSOCIATE WORKLOAD (~25 SCHOOLS/FTE)\n` +
-                                      `========================================\n` +
-                                      col2Text.replace(/• /g, '- ') + `\n\n` +
-                                      `========================================\n` +
-                                      `3. STRATEGIC RECOMMENDATIONS & ACTIONS\n` +
-                                      `========================================\n` +
-                                      col3Text.replace(/• /g, '- ');
+                                      `----------------------------------------\n` +
+                                      `a. SCHOOL SUMMARY\n` +
+                                      `----------------------------------------\n` +
+                                      schoolText + `\n\n` +
+                                      `----------------------------------------\n` +
+                                      `b. ASSOCIATE SUMMARY (~25 SCHOOLS/FTE)\n` +
+                                      `----------------------------------------\n` +
+                                      associateText + `\n\n` +
+                                      `----------------------------------------\n` +
+                                      `c. SUBJECT & TOPIC SUMMARY\n` +
+                                      `----------------------------------------\n` +
+                                      subjectText.replace(/\*\*/g, '');
         }
 
         function downloadAISummaryReport() {
@@ -744,41 +897,56 @@
             const blob = new Blob([lastGeneratedReportText], { type: 'text/plain;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'Digital_Shaala_Executive_AI_Summary.txt';
+            link.download = 'Digital_Shaala_Friendly_AI_Summary.txt';
             link.click();
         }
 
-        function renderTable(data) {
+        function renderTable(schoolsList) {
             const tbody = document.getElementById('directoryTableBody');
-            if (!data.length) {
-                tbody.innerHTML = `<tr><td colspan="13" class="p-12 text-center text-slate-400">No matching records found for selected filters.</td></tr>`;
+            const search = document.getElementById('tableSearch').value.toLowerCase().trim();
+
+            const filteredList = schoolsList.filter(s => {
+                if (search && !`${s.schoolName} ${s.associateName} ${s.udise} ${s.district}`.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            if (!filteredList.length) {
+                tbody.innerHTML = `<tr><td colspan="12" class="p-12 text-center text-slate-400">No matching schools found for selected filters.</td></tr>`;
                 return;
             }
+
             let html = '';
-            data.slice(0, 300).forEach(row => {
-                let tier = row.SchoolRubricTier || 'Low';
+            filteredList.slice(0, 300).forEach(s => {
+                let tier = s.rubricTier || 'Inactive';
                 let badgeClass = 'bg-slate-800 text-slate-300';
-                if (tier === 'Low') badgeClass = 'bg-red-600 text-white';
+                if (tier === 'Inactive') badgeClass = 'bg-slate-700 text-indigo-300 border border-slate-600';
+                else if (tier === 'Low') badgeClass = 'bg-red-600 text-white';
                 else if (tier === 'Moderate') badgeClass = 'bg-amber-500 text-slate-950 font-bold';
                 else if (tier === 'Regular') badgeClass = 'bg-emerald-600 text-white';
                 else if (tier === 'Exemplar') badgeClass = 'bg-yellow-600 text-white';
                 else if (tier === 'FLAG') badgeClass = 'bg-lime-500 text-slate-950 font-bold';
 
+                let tierDisplayLabel = tier === 'Inactive' ? '🌱 Just Starting' : tier;
+
+                let mobMins = (s.mobileHours * 60).toFixed(1);
+                let tvMins = (s.tvHours * 60).toFixed(1);
+                let syncMins = (s.syncHours * 60).toFixed(1);
+                let totalMins = (s.totalHours * 60).toFixed(1);
+
                 html += `
                     <tr class="hover:bg-slate-50 dark:hover:bg-[#161e2e] transition">
-                        <td class="p-3.5 font-medium">${row.PartnerName || '-'}</td>
-                        <td class="p-3.5">${row.State || '-'}</td>
-                        <td class="p-3.5">${row.District || '-'}</td>
-                        <td class="p-3.5">${row.Block || '-'}</td>
-                        <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${row.UDISE || '-'}</td>
-                        <td class="p-3.5 font-bold text-slate-900 dark:text-white">${row.SchoolName || '-'}</td>
-                        <td class="p-3.5 text-slate-700 dark:text-slate-300 font-semibold">${row.AssociateName || 'Unassigned'}</td>
-                        <td class="p-3.5 text-right font-mono">${row.MobileHours ?? 0}</td>
-                        <td class="p-3.5 text-right font-mono">${row.TvHours ?? 0}</td>
-                        <td class="p-3.5 text-right font-mono">${row.SyncHours ?? 0}</td>
-                        <td class="p-3.5 text-right font-mono font-bold text-blue-600 dark:text-blue-400">${row['Total hours'] ?? row.TotalHours ?? 0}</td>
-                        <td class="p-3.5 text-center"><span class="px-2.5 py-1 rounded-lg text-[10px] ${badgeClass}">${tier}</span></td>
-                        <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${row.Date || '-'}</td>
+                        <td class="p-3.5 font-medium">${s.partnerName || '-'}</td>
+                        <td class="p-3.5">${s.state || '-'}</td>
+                        <td class="p-3.5">${s.district || '-'}</td>
+                        <td class="p-3.5">${s.block || '-'}</td>
+                        <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${s.udise || '-'}</td>
+                        <td class="p-3.5 font-bold text-slate-900 dark:text-white">${s.schoolName || '-'}</td>
+                        <td class="p-3.5 text-slate-700 dark:text-slate-300 font-semibold">${s.associateName || 'Unassigned'}</td>
+                        <td class="p-3.5 text-right font-mono">${mobMins}</td>
+                        <td class="p-3.5 text-right font-mono">${tvMins}</td>
+                        <td class="p-3.5 text-right font-mono">${syncMins}</td>
+                        <td class="p-3.5 text-right font-mono font-bold text-blue-600 dark:text-blue-400">${totalMins}</td>
+                        <td class="p-3.5 text-center"><span class="px-2.5 py-1 rounded-lg text-[10px] ${badgeClass}">${tierDisplayLabel}</span></td>
                     </tr>
                 `;
             });
